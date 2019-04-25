@@ -11,7 +11,7 @@ import {
 } from 'vscode-languageserver-types';
 import { IServiceHost } from '../../services/typescriptService/serviceHost';
 import { languageServiceIncludesFile } from '../script/javascript';
-import { getFileFsPath } from '../../utils/paths';
+import { getNormalizedFilePathAsFileSchema, getNormalizedFilePath } from '../../utils/paths';
 import { mapBackRange, mapFromPositionToOffset } from '../../services/typescriptService/sourceMap';
 import * as ts from 'typescript';
 import { T_TypeScript } from '../../services/dependencyService';
@@ -52,7 +52,7 @@ export class VueInterpolationMode implements LanguageMode {
       return [];
     }
 
-    const templateFileFsPath = getFileFsPath(templateDoc.uri);
+    const templateFileFsPath = getNormalizedFilePath(templateDoc.uri);
     // We don't need syntactic diagnostics because
     // compiled template is always valid JavaScript syntax.
     const rawTemplateDiagnostics = templateService.getSemanticDiagnostics(templateFileFsPath);
@@ -96,7 +96,7 @@ export class VueInterpolationMode implements LanguageMode {
       };
     }
 
-    const templateFileFsPath = getFileFsPath(templateDoc.uri);
+    const templateFileFsPath = getNormalizedFilePath(templateDoc.uri);
     const mappedPosition = mapFromPositionToOffset(templateDoc, position, templateSourceMap);
 
     const info = templateService.getQuickInfoAtPosition(templateFileFsPath, mappedPosition);
@@ -133,7 +133,7 @@ export class VueInterpolationMode implements LanguageMode {
       return [];
     }
 
-    const templateFileFsPath = getFileFsPath(templateDoc.uri);
+    const templateFileFsPath = getNormalizedFilePath(templateDoc.uri);
     const mappedPosition = mapFromPositionToOffset(templateDoc, position, templateSourceMap);
     const definitions = templateService.getDefinitionAtPosition(templateFileFsPath, mappedPosition);
     if (!definitions) {
@@ -154,8 +154,11 @@ export class VueInterpolationMode implements LanguageMode {
             ? mapBackRange(templateDoc, r.textSpan, templateSourceMap)
             : convertRange(definitionTargetDoc, r.textSpan);
 
+        // VSCode seems to want a file:// schema to resolve the path, an absolute path didn't seem to work.
+        const uri = getNormalizedFilePathAsFileSchema(definitionTargetDoc.uri);
+
         definitionResults.push({
-          uri: definitionTargetDoc.uri.toString(),
+          uri: uri.toString(),
           range
         });
       }
@@ -181,7 +184,7 @@ export class VueInterpolationMode implements LanguageMode {
       return [];
     }
 
-    const templateFileFsPath = getFileFsPath(templateDoc.uri);
+    const templateFileFsPath = getNormalizedFilePath(templateDoc.uri);
     const mappedPosition = mapFromPositionToOffset(templateDoc, position, templateSourceMap);
     const references = templateService.getReferencesAtPosition(templateFileFsPath, mappedPosition);
     if (!references) {
@@ -202,8 +205,11 @@ export class VueInterpolationMode implements LanguageMode {
             ? mapBackRange(templateDoc, r.textSpan, templateSourceMap)
             : convertRange(referenceTargetDoc, r.textSpan);
 
+        // VSCode seems to want a file:// schema to resolve the path, an absolute path didn't seem to work.
+        const uri = getNormalizedFilePathAsFileSchema(referenceTargetDoc.uri);
+
         referenceResults.push({
-          uri: referenceTargetDoc.uri.toString(),
+          uri: uri.toString(),
           range
         });
       }

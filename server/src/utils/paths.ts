@@ -14,3 +14,24 @@ export function getFilePath(documentUri: string): string {
     return Uri.parse(documentUri).path;
   }
 }
+
+function normalizeSlashes(documentUri: string) {
+  return documentUri.replace(/\\/g, '/');
+}
+
+export function getNormalizedFilePathAsFileSchema(documentUri: string) {
+  const uri = Uri.parse(documentUri);
+  const convertedUri = uri.scheme === 'file' ? uri : Uri.file(normalizeSlashes(documentUri));
+
+  return convertedUri;
+}
+
+export function getNormalizedFilePath(documentUri: string) {
+  const uri = Uri.parse(documentUri);
+
+  if (uri.scheme !== 'file') {
+    return normalizeSlashes(documentUri);
+  }
+
+  return normalizeSlashes(uri.fsPath);
+}

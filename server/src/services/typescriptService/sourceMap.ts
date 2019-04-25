@@ -1,5 +1,5 @@
 import { TextDocument, Range, Position } from 'vscode-languageserver-types';
-import { getFileFsPath } from '../../utils/paths';
+import { getNormalizedFilePath } from '../../utils/paths';
 import * as ts from 'typescript';
 import { T_TypeScript } from '../dependencyService';
 
@@ -166,7 +166,7 @@ export function mapFromPositionToOffset(
  * Map an offset from actual `.vue` file to `.vue.template` file
  */
 function mapFromOffsetToOffset(document: TextDocument, offset: number, sourceMap: TemplateSourceMap): number {
-  const filePath = getFileFsPath(document.uri);
+  const filePath = getNormalizedFilePath(document.uri);
   if (!sourceMap[filePath]) {
     return INVALID_OFFSET;
   }
@@ -185,7 +185,7 @@ function mapFromOffsetToOffset(document: TextDocument, offset: number, sourceMap
  * Map a range from actual `.vue` file to `.vue.template` file
  */
 export function mapToRange(toDocument: TextDocument, from: ts.TextSpan, sourceMap: TemplateSourceMap): Range {
-  const filePath = getFileFsPath(toDocument.uri);
+  const filePath = getNormalizedFilePath(toDocument.uri);
   if (!sourceMap[filePath]) {
     return INVALID_RANGE;
   }
@@ -209,7 +209,7 @@ export function mapToRange(toDocument: TextDocument, from: ts.TextSpan, sourceMa
  * Map a range from virtual `.vue.template` file back to original `.vue` file
  */
 export function mapBackRange(fromDocumnet: TextDocument, to: ts.TextSpan, sourceMap: TemplateSourceMap): Range {
-  const filePath = getFileFsPath(fromDocumnet.uri);
+  const filePath = getNormalizedFilePath(fromDocumnet.uri)!;
   if (!sourceMap[filePath]) {
     return INVALID_RANGE;
   }

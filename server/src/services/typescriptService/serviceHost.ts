@@ -6,11 +6,11 @@ import * as parseGitIgnore from 'parse-gitignore';
 
 import { LanguageModelCache } from '../../embeddedSupport/languageModelCache';
 import { createUpdater, parseVueScript, isVue } from './preprocess';
-import { getFileFsPath, getFilePath } from '../../utils/paths';
+import { getFileFsPath, getFilePath, getNormalizedFilePath } from '../../utils/paths';
 import * as bridge from './bridge';
 import { T_TypeScript } from '../../services/dependencyService';
 import { getVueSys } from './vueSys';
-import { TemplateSourceMap, TemplateSourceMapNode, stringifySourceMapNodes } from './sourceMap';
+import { TemplateSourceMap, stringifySourceMapNodes } from './sourceMap';
 import { isVirtualVueTemplateFile } from './util';
 
 function patchTS(tsModule: T_TypeScript) {
@@ -77,14 +77,16 @@ export function getServiceHost(
     fileName: string,
     currFileText: string
   ): { source: string; sourceMapNodesString: string } {
+    const normalizedPath = getNormalizedFilePath(fileName);
+
     const program = templateLanguageService.getProgram();
     if (program) {
-      const tsVirtualFile = program.getSourceFile(fileName + '.template');
+      const tsVirtualFile = program.getSourceFile(normalizedPath + '.template');
       if (tsVirtualFile) {
         return {
           source: tsVirtualFile.getText(),
           sourceMapNodesString: stringifySourceMapNodes(
-            templateSourceMap[fileName],
+            templateSourceMap[normalizedPath],
             currFileText,
             tsVirtualFile.getText()
           )
